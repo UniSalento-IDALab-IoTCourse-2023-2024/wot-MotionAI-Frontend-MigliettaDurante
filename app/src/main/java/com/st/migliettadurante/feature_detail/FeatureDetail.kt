@@ -9,7 +9,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -75,8 +74,8 @@ fun FeatureDetail(
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color.White,
-                contentColor = Color(0xFFE3F2FD)
+                containerColor = Color(0xFFE3F2FD),
+                contentColor = Color(0xFF000000)
             ),
             elevation = CardDefaults.cardElevation(8.dp)
         ) {

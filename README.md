@@ -14,7 +14,7 @@ un'interazione semplice e immediata con l'utente.
 
 ## Tecnologie utilizzate
 
-- SensorTile.box PRO
+- **SensorTile.box PRO:** La scheda di STMicroelectronics è progettata per prototipi di monitoraggio ambientale e rilevamento dei movimenti. Integra sensori come accelerometro, giroscopio, magnetometro, sensori di temperatura, pressione e un microfono digitale. Dispone di un microcontrollore STM32U585AI per l'elaborazione e supporta Bluetooth Low Energy (BLE) e NFC. È compatibile con software ST per sviluppare e caricare modelli di machine learning. 
 
 ### Backend
 - **STM32CubeProgrammer:** È uno strumento per operazioni come flashing del firmware, lettura/scrittura della memoria, aggiornamento del bootloader e configurazione delle opzioni di protezione. Supporta interfacce come JTAG, SWD, UART, USB e SPI, ed è compatibile con dispositivi STM32. È disponibile per Windows, macOS e Linux

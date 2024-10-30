@@ -17,6 +17,7 @@ import com.st.migliettadurante.device_detail.BleDeviceDetail
 import com.st.migliettadurante.device_list.BleDeviceList
 import com.st.migliettadurante.feature_detail.ActivityRecognition
 import com.st.migliettadurante.feature_detail.FeatureDetail
+import com.st.migliettadurante.feature_detail.HARSmartphone
 import com.st.migliettadurante.ui.theme.StDemoTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -98,6 +99,23 @@ private fun MainScreen() {
                 backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
                     backStackEntry.arguments?.getString("featureName")?.let { featureName ->
                         ActivityRecognition(
+                            viewModel = hiltViewModel(),
+                            navController = navController,
+                            deviceId = deviceId,
+                            featureName = featureName
+                        )
+                    }
+                }
+            }
+
+            composable(
+                route = "feature/{deviceId}/{featureName}/HARSmartphone",
+                arguments = listOf(navArgument("deviceId") { type = NavType.StringType },
+                    navArgument("featureName") { type = NavType.StringType })
+            ) { backStackEntry ->
+                backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
+                    backStackEntry.arguments?.getString("featureName")?.let { featureName ->
+                        HARSmartphone(
                             viewModel = hiltViewModel(),
                             navController = navController,
                             deviceId = deviceId,

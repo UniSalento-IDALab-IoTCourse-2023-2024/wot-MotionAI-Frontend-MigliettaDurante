@@ -86,6 +86,7 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation (libs.exoplayer)
+    implementation(libs.microsoft.onnxruntime.android)
 
     debugImplementation(libs.androidx.compose.uitestmanifest)
 }

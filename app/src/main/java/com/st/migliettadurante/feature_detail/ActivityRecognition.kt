@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import android.util.Log
 import com.har.migliettadurante.R
 
 @SuppressLint("MissingPermission")
@@ -45,15 +46,10 @@ fun ActivityRecognition(
     }
 
     val features = viewModel.featureUpdates
-
-
     val currentActivity = remember { mutableStateOf("") }
 
     LaunchedEffect(features.value) {
-
         val dataString = features.value?.data?.toString() ?: ""
-
-
         currentActivity.value = extractActivityFromLoggable(dataString)
     }
 
@@ -88,13 +84,12 @@ fun ActivityRecognition(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Layout Grid con 2 colonne
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             ActivityCard(
-                activityName = "Run",
+                activityName = "Running",
                 imageRes = R.drawable.run_image,
                 isSelected = currentActivity.value == "Jogging",
                 modifier = Modifier.weight(1f)
@@ -103,7 +98,7 @@ fun ActivityRecognition(
             Spacer(modifier = Modifier.width(16.dp))
 
             ActivityCard(
-                activityName = "Walk",
+                activityName = "Walking",
                 imageRes = R.drawable.walk_image,
                 isSelected = currentActivity.value == "Walking",
                 modifier = Modifier.weight(1f)
@@ -117,7 +112,7 @@ fun ActivityRecognition(
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             ActivityCard(
-                activityName = "Stop",
+                activityName = "Stationary",
                 imageRes = R.drawable.stop_image,
                 isSelected = currentActivity.value == "Stationary",
                 modifier = Modifier.weight(1f)
@@ -126,7 +121,7 @@ fun ActivityRecognition(
             Spacer(modifier = Modifier.width(16.dp))
 
             ActivityCard(
-                activityName = "Drive",
+                activityName = "Driving",
                 imageRes = R.drawable.drive_image,
                 isSelected = currentActivity.value == "Driving",
                 modifier = Modifier.weight(1f)
@@ -177,17 +172,16 @@ fun ActivityCard(
     isSelected: Boolean,
     modifier: Modifier = Modifier
 ) {
-    // Colore per la retroilluminazione sui bordi
     val borderColor = if (isSelected) Color(0xFF42A5F5) else Color.Transparent
 
     Card(
         shape = RoundedCornerShape(16.dp),
         modifier = modifier
             .padding(8.dp)
-            .border(4.dp, borderColor, RoundedCornerShape(16.dp)) // Solo bordi illuminati
+            .border(4.dp, borderColor, RoundedCornerShape(16.dp))
             .height(200.dp),
         colors = androidx.compose.material3.CardDefaults.cardColors(
-            containerColor = Color.Unspecified // Sfondo bianco, nessun ombra interna
+            containerColor = Color.Unspecified
         )
     ) {
         Column(
@@ -212,12 +206,8 @@ fun ActivityCard(
     }
 }
 
-
 fun extractActivityFromLoggable(dataString: String): String {
-    // Cerchiamo il pattern "Activity = XYZ"
     val regex = Regex("Activity\\s*=\\s*(\\w+)")
     val matchResult = regex.find(dataString)
-
-    // Ritorna l'attività trovata, altrimenti una stringa vuota
-    return matchResult?.groupValues?.get(1) ?: ""
+    return matchResult?.groupValues?.get(1) ?: "Stationary"
 }

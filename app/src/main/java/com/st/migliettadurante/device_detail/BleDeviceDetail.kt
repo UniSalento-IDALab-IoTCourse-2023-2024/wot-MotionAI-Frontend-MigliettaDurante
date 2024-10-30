@@ -229,6 +229,44 @@ fun BleDeviceDetail(
                     Divider(color = Color(0xFFE5E7EB), thickness = 1.dp)
                 }
             }
+
+            if (bleDevice.value?.connectionStatus?.current == NodeState.Ready) {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(70.dp)
+                            .padding(vertical = 6.dp, horizontal = 5.dp)
+                            .clickable {
+                                navController.navigate("feature/$deviceId/Activity Recognition/HARSmartphone")
+
+                            },
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFE3F2FD),
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_feature),
+                                contentDescription = "Feature Icon",
+                                tint = Color(0xFF007AFF),
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = "HAR Smartphone",
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium)
+                            )
+                        }
+                    }
+                }
+            }
+
         }
 
         Button(

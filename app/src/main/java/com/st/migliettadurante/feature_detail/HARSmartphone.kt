@@ -47,7 +47,7 @@ fun HARSmartphone(
 ) {
     val backHandlingEnabled by remember { mutableStateOf(true) }
 
-    val mqttManager = MqttManager("tcp://<test.mosquitto.org>:1883", "test_publisher")
+    val mqttManager = MqttManager("tcp://test.mosquitto.org:1883", "test_publisher")
     mqttManager.connect()
 
     fun sendPredictionToCloud(prediction: String) {

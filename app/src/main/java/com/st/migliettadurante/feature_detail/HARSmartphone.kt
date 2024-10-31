@@ -1,5 +1,6 @@
 package com.st.migliettadurante.feature_detail
 
+import MqttManager
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -31,6 +32,7 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.ui.platform.LocalContext
 import com.har.migliettadurante.R
+import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import kotlin.toString
@@ -44,6 +46,17 @@ fun HARSmartphone(
     featureName: String
 ) {
     val backHandlingEnabled by remember { mutableStateOf(true) }
+
+    val mqttManager = MqttManager("tcp://<test.mosquitto.org>:1883", "test_publisher")
+    mqttManager.connect()
+
+    fun sendPredictionToCloud(prediction: String) {
+        val json = JSONObject()
+        json.put("device_id", deviceId)
+        json.put("activity", prediction)
+
+        mqttManager.publish("accelerometer/prediction", json.toString())
+    }
 
     LaunchedEffect(Unit) {
         viewModel?.startCalibration(deviceId, "Accelerometer")
@@ -104,6 +117,8 @@ fun HARSmartphone(
 
                 val prediction = sendToRandomForestModel(context, stats)
                 randomForestActivity.value = prediction
+
+                sendPredictionToCloud(randomForestActivity.value)
 
                 xValues.clear()
                 yValues.clear()

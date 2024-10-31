@@ -79,6 +79,11 @@ dependencies {
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.accompanist)
+    implementation(libs.microsoft.onnxruntime.android)
+    implementation(libs.org.eclipse.paho.client.mqttv3)
+    implementation(libs.okhttp)
+
+
     implementation(libs.bundles.compose)
     implementation(libs.bundles.composeUiTooling)
     implementation(libs.bundles.network)

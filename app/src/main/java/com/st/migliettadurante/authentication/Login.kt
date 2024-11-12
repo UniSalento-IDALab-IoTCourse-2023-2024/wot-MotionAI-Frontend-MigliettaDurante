@@ -133,7 +133,7 @@ fun Login(
                     ),
                     singleLine = true,
                     label = { Text("Email") },
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp).fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
                         cursorColor = Color(0xFF3A7BD5),
                         unfocusedContainerColor = Color(0xFFE3F2FD),
@@ -170,7 +170,7 @@ fun Login(
                     },
                     singleLine = true,
                     label = { Text("Password") },
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp).fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
                         cursorColor = Color(0xFF3A7BD5),
                         unfocusedContainerColor = Color(0xFFE3F2FD),

@@ -19,6 +19,7 @@
         android:theme="@style/Theme.StDemo">
         <activity
             android:name="com.st.migliettadurante.MainActivity"
+            android:scheme="com.st.migliettadurante"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.StDemo.NoActionBar"

@@ -34,6 +34,8 @@ fun ActivityRecognition(
     deviceId: String,
     featureName: String
 ) {
+
+    val activityRecognitionIndex = 0
     val backHandlingEnabled by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
@@ -41,15 +43,15 @@ fun ActivityRecognition(
     }
 
     BackHandler(enabled = backHandlingEnabled) {
-        viewModel.disconnectFeature(deviceId = deviceId, featureName = featureName)
+        viewModel.disconnectFeature(deviceId = deviceId, featureName = featureName, index = activityRecognitionIndex)
         navController.popBackStack()
     }
 
-    val features = viewModel.featureUpdates
+    val activityRecognitionFeature = viewModel.featureUpdates.value.get(activityRecognitionIndex)
     val currentActivity = remember { mutableStateOf("") }
 
-    LaunchedEffect(features.value) {
-        val dataString = features.value?.data?.toString() ?: ""
+    LaunchedEffect(activityRecognitionFeature) {
+        val dataString = activityRecognitionFeature?.data?.toString() ?: ""
         currentActivity.value = extractActivityFromLoggable(dataString)
     }
 
@@ -61,7 +63,7 @@ fun ActivityRecognition(
     ) {
 
         Text(
-            text = stringResource(R.string.st_feature_featureNameLabel, featureName),
+            text = "HAR su SensorTile.box PRO",
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.Bold,
                 fontSize = 26.sp
@@ -160,7 +162,7 @@ fun ActivityRecognition(
     }
 
     LaunchedEffect(true) {
-        viewModel.observeFeature(deviceId = deviceId, featureName = featureName)
+        viewModel.observeFeature(deviceId = deviceId, featureName = featureName, index = activityRecognitionIndex)
         viewModel.sendExtendedCommand(featureName = featureName, deviceId = deviceId)
     }
 }

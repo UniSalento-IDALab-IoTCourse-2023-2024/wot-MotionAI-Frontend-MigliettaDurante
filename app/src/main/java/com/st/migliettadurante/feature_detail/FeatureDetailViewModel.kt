@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.collections.mutableMapOf
 
 @HiltViewModel
 class FeatureDetailViewModel @Inject constructor(
@@ -46,10 +47,11 @@ class FeatureDetailViewModel @Inject constructor(
         private val TAG = FeatureDetailViewModel::class.simpleName
     }
 
-    val featureUpdates: State<FeatureUpdate<*>?>
+    val featureUpdates: State<Array<FeatureUpdate<*>?>>
         get() = _featureUpdates
 
-    private val _featureUpdates = mutableStateOf<FeatureUpdate<*>?>(null)
+    private val _featureUpdates = mutableStateOf(arrayOfNulls<FeatureUpdate<*>>(2))
+    private val observeFeatureJobs = mutableMapOf<String, Job>()
 
     fun startCalibration(deviceId: String, featureName: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -70,25 +72,26 @@ class FeatureDetailViewModel @Inject constructor(
         }
     }
 
-    private var observeFeatureJob: Job? = null
-
-    fun observeFeature(featureName: String, deviceId: String) {
-        observeFeatureJob?.cancel()
+    fun observeFeature(featureName: String, deviceId: String, index: Int) {
+        observeFeatureJobs[featureName]?.cancel()
 
         blueManager.nodeFeatures(deviceId).find { it.name == featureName }?.let { feature ->
-            observeFeatureJob =
-                blueManager.getFeatureUpdates(nodeId = deviceId, features = listOf(feature))
-                    .flowOn(Dispatchers.IO)
-                    .onEach {
-                        _featureUpdates.value = it
-                    }.launchIn(viewModelScope)
+            Log.d(TAG, "Feature found: $featureName")
+            val job = blueManager.getFeatureUpdates(nodeId = deviceId, features = listOf(feature))
+                .flowOn(Dispatchers.IO)
+                .onEach {
+                    _featureUpdates.value = _featureUpdates.value.copyOf().apply { this[index] = it }
+                    Log.d(TAG, "Feature update received: ${_featureUpdates.value[index]}")
+                }.launchIn(viewModelScope)
+
+            observeFeatureJobs[featureName] = job
+        } ?: run {
+            Log.d(TAG, "Feature not found: $featureName")
         }
     }
 
     fun sendExtendedCommand(featureName: String, deviceId: String) {
-
         viewModelScope.launch {
-
             val feature =
                 blueManager.nodeFeatures(deviceId).find { it.name == featureName } ?: return@launch
 
@@ -151,9 +154,10 @@ class FeatureDetailViewModel @Inject constructor(
         }
     }
 
-    fun disconnectFeature(deviceId: String, featureName: String) {
-        observeFeatureJob?.cancel()
-        _featureUpdates.value = null
+    fun disconnectFeature(deviceId: String, featureName: String, index: Int) {
+        observeFeatureJobs[featureName]?.cancel()
+        observeFeatureJobs.remove(featureName)
+        _featureUpdates.value[index] = null
         viewModelScope.launch {
             val features = blueManager.nodeFeatures(deviceId).filter { it.name == featureName }
             blueManager.disableFeatures(

@@ -131,53 +131,25 @@ fun InfoApp(navController: NavController) {
             }
         }
 
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
+        Button(
+            onClick = { navController.navigate("welcome") },
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2F3F4)),
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
+                .padding(16.dp)
+                .align(Alignment.CenterHorizontally)
         ) {
-            Button(
-                onClick = { navController.navigate("welcome") },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2F3F4)),
-                modifier = Modifier
-                    .padding(end = 8.dp)
-                    .weight(1f)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_back),
-                    contentDescription = "Icona Indietro",
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Indietro",
-                    color = Color.Black,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-            Button(
-                onClick = { navController.navigate("list") },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3A7BD5)),
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .weight(1f)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_search),
-                    contentDescription = "Icona Ricerca",
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Scansiona",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
+            Image(
+                painter = painterResource(id = R.drawable.ic_back),
+                contentDescription = "Icona Indietro",
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Indietro",
+                color = Color.Black,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold
+            )
         }
     }
 }

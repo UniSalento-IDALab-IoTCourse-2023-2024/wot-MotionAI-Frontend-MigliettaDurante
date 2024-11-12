@@ -82,16 +82,18 @@ dependencies {
     implementation(libs.microsoft.onnxruntime.android)
     implementation(libs.org.eclipse.paho.client.mqttv3)
     implementation(libs.okhttp)
-
-
     implementation(libs.bundles.compose)
     implementation(libs.bundles.composeUiTooling)
     implementation(libs.bundles.network)
     implementation(libs.androidx.material2)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-    implementation (libs.exoplayer)
+    implementation(libs.exoplayer)
     implementation(libs.microsoft.onnxruntime.android)
+    implementation(libs.gson)
+    implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.security.crypto)
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
     debugImplementation(libs.androidx.compose.uitestmanifest)
 }

@@ -12,12 +12,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.humanactivityrecognition.screen.WelcomeScreen
+import com.st.migliettadurante.archive.Archive
 import com.st.migliettadurante.audio.AudioScreen
+import com.st.migliettadurante.authentication.Login
+import com.st.migliettadurante.authentication.Registration
+import com.st.migliettadurante.authentication.UpdateUser
+import com.st.migliettadurante.dashboard.Dashboard
 import com.st.migliettadurante.device_detail.BleDeviceDetail
 import com.st.migliettadurante.device_list.BleDeviceList
 import com.st.migliettadurante.feature_detail.ActivityRecognition
 import com.st.migliettadurante.feature_detail.FeatureDetail
-import com.st.migliettadurante.feature_detail.HARSmartphone
+import com.st.migliettadurante.feature_detail.SensorTileAndSmartphone
+import com.st.migliettadurante.feature_detail.SmartphoneActivityRecognition
 import com.st.migliettadurante.ui.theme.StDemoTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -33,7 +39,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
 
 @Composable
 private fun MainScreen() {
@@ -54,10 +59,47 @@ private fun MainScreen() {
                 )
             }
 
+            composable(route = "login") {
+                Login(
+                    viewModel = hiltViewModel(),
+                    navController = navController
+                )
+            }
+
+            composable(route = "registration") {
+                Registration(
+                    viewModel = hiltViewModel(),
+                    navController = navController
+                )
+            }
+
             composable(route = "list") {
                 BleDeviceList(
                     viewModel = hiltViewModel(),
                     navController = navController
+                )
+            }
+
+            composable(route = "archive") {
+                Archive(
+                    viewModel = hiltViewModel(),
+                    navController = navController
+                )
+            }
+
+            composable(route = "updateUser") {
+                UpdateUser(
+                    updateUserViewModel = hiltViewModel(),
+                    loginViewModel = hiltViewModel(),
+                    navController = navController
+                )
+            }
+
+            composable(route = "dashboard") {
+                Dashboard(
+                    dashboardViewModel = hiltViewModel(),
+                    bleDeviceDetailViewModel = hiltViewModel(),
+                    navController = navController,
                 )
             }
 
@@ -115,8 +157,27 @@ private fun MainScreen() {
             ) { backStackEntry ->
                 backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
                     backStackEntry.arguments?.getString("featureName")?.let { featureName ->
-                        HARSmartphone(
-                            viewModel = hiltViewModel(),
+                        SensorTileAndSmartphone(
+                            featureViewModel = hiltViewModel(),
+                            recognitionViewModel = hiltViewModel(),
+                            navController = navController,
+                            deviceId = deviceId,
+                            featureName = featureName
+                        )
+                    }
+                }
+            }
+
+            composable(
+                route = "feature/{deviceId}/{featureName}/smartphone",
+                arguments = listOf(navArgument("deviceId") { type = NavType.StringType },
+                    navArgument("featureName") { type = NavType.StringType })
+            ) { backStackEntry ->
+                backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
+                    backStackEntry.arguments?.getString("featureName")?.let { featureName ->
+                        SmartphoneActivityRecognition(
+                            featureDetailViewModel = hiltViewModel(),
+                            recognitionViewModel = hiltViewModel(),
                             navController = navController,
                             deviceId = deviceId,
                             featureName = featureName

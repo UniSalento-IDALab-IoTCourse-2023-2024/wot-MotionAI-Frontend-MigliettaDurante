@@ -20,37 +20,51 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.st.blue_sdk.models.NodeState
 import com.har.migliettadurante.R
+import com.st.migliettadurante.authentication.SecureStorageManager
 
 @SuppressLint("MissingPermission")
 @Composable
 fun BleDeviceDetail(
     navController: NavHostController,
-    viewModel: BleDeviceDetailViewModel,
+    viewModel: BleDeviceDetailViewModel?,
     deviceId: String
 ) {
+
+    val secureStorageManager = SecureStorageManager(LocalContext.current)
+
     LaunchedEffect(key1 = deviceId) {
-        viewModel.connect(deviceId = deviceId)
+        viewModel?.connect(deviceId = deviceId)
+        secureStorageManager.saveDeviceId(deviceId)
     }
 
-    val bleDevice = viewModel.bleDevice(deviceId = deviceId).collectAsState(null)
-    val features = viewModel.features.collectAsState()
+    val bleDevice = viewModel?.bleDevice(deviceId = deviceId)?.collectAsState(null)
+    val features = viewModel?.features?.collectAsState()
+    var connected = bleDevice?.value?.connectionStatus?.current == NodeState.Ready
 
-    if (bleDevice.value?.connectionStatus?.current == NodeState.Ready) {
+    bleDevice?.value?.connectionStatus?.current.let {
+        connected = it == NodeState.Ready
+    }
+
+
+    if (bleDevice?.value?.connectionStatus?.current == NodeState.Ready) {
         viewModel.getFeatures(deviceId = deviceId)
     }
 
     val backHandlingEnabled by remember { mutableStateOf(true) }
 
     BackHandler(enabled = backHandlingEnabled) {
-        viewModel.disconnect(deviceId = deviceId)
+        viewModel?.disconnect(deviceId = deviceId)
         navController.popBackStack()
     }
 
@@ -73,7 +87,8 @@ fun BleDeviceDetail(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (viewModel.showAudioBtn(deviceId)) {
+
+            if (viewModel?.showAudioBtn(deviceId) == true) {
                 Text(
                     text = stringResource(R.string.st_testAudio),
                     color = Color(0xFF007AFF),
@@ -82,7 +97,7 @@ fun BleDeviceDetail(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 IconButton(
-                    enabled = bleDevice.value?.connectionStatus?.current == NodeState.Ready,
+                    enabled = bleDevice?.value?.connectionStatus?.current == NodeState.Ready,
                     onClick = {
                         navController.navigate("audio/$deviceId")
                     }
@@ -121,7 +136,7 @@ fun BleDeviceDetail(
                         color = Color(0xFF374151)
                     )
                     Text(
-                        text = bleDevice.value?.device?.name ?: "N/A",
+                        text = bleDevice?.value?.device?.name ?: "N/A",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF6B7280)
@@ -155,7 +170,7 @@ fun BleDeviceDetail(
                         color = Color(0xFF374151)
                     )
                     Text(
-                        text = bleDevice.value?.connectionStatus?.current?.name?.uppercase()
+                        text = bleDevice?.value?.connectionStatus?.current?.name?.uppercase()
                             ?: "DISCONNECTED",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
@@ -176,7 +191,7 @@ fun BleDeviceDetail(
                 .padding(horizontal = 16.dp)
         )
 
-        val filteredFeatures = features.value.filter {
+        val filteredFeatures = features?.value?.filter {
             it.name == "Accelerometer" || it.name == "Gyroscope" || it.name == "Magnetometer" || it.name == "Activity Recognition"
         }
 
@@ -187,50 +202,51 @@ fun BleDeviceDetail(
                 .padding(horizontal = 10.dp),
             contentPadding = PaddingValues(8.dp)
         ) {
-            itemsIndexed(items = filteredFeatures) { index, item ->
+            if (!filteredFeatures.isNullOrEmpty())
+                itemsIndexed(items = filteredFeatures) { index, item ->
 
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(70.dp)
-                        .padding(vertical = 6.dp, horizontal = 5.dp)
-                        .clickable {
-                            if (item.name == "Activity Recognition") {
-                                navController.navigate("feature/$deviceId/${item.name}/activity")
-                            } else {
-                                navController.navigate("feature/$deviceId/${item.name}")
-                            }
-                        },
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFE3F2FD),
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(70.dp)
+                            .padding(vertical = 6.dp, horizontal = 5.dp)
+                            .clickable {
+                                if (item.name == "Activity Recognition") {
+                                    navController.navigate("feature/$deviceId/${item.name}/activity")
+                                } else {
+                                    navController.navigate("feature/$deviceId/${item.name}")
+                                }
+                            },
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFE3F2FD),
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_feature),
-                            contentDescription = "Feature Icon",
-                            tint = Color(0xFF007AFF),
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text(
-                            text = item.name,
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium)
-                        )
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_feature),
+                                contentDescription = "Feature Icon",
+                                tint = Color(0xFF007AFF),
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = if(item.name == "Activity Recognition") "HAR SensorTile.box PRO" else item.name,
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium)
+                            )
+                        }
+                    }
+
+                    if (filteredFeatures.lastIndex != index) {
+                        Divider(color = Color(0xFFE5E7EB), thickness = 1.dp)
                     }
                 }
 
-                if (filteredFeatures.lastIndex != index) {
-                    Divider(color = Color(0xFFE5E7EB), thickness = 1.dp)
-                }
-            }
-
-            if (bleDevice.value?.connectionStatus?.current == NodeState.Ready) {
+            if (bleDevice?.value?.connectionStatus?.current == NodeState.Ready) {
                 item {
                     Card(
                         modifier = Modifier
@@ -259,39 +275,112 @@ fun BleDeviceDetail(
                             )
                             Spacer(modifier = Modifier.width(16.dp))
                             Text(
-                                text = "HAR Smartphone",
+                                text = "HAR Smartphone e SensorTile",
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium)
+                            )
+                        }
+                    }
+                }
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(70.dp)
+                            .padding(vertical = 6.dp, horizontal = 5.dp)
+                            .clickable {
+                                navController.navigate("feature/$deviceId/Accelerometer/smartphone")
+
+                            },
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFE3F2FD),
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_feature),
+                                contentDescription = "Feature Icon",
+                                tint = Color(0xFF007AFF),
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = "HAR su Smartphone",
                                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium)
                             )
                         }
                     }
                 }
             }
-
         }
-
-        Button(
-            onClick = {
-                viewModel.disconnect(deviceId = deviceId)
-                navController.popBackStack()
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2F3F4)),
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier
-                .padding(8.dp)
-                .align(Alignment.CenterHorizontally),
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_back),
-                contentDescription = "Icona Indietro",
-                modifier = Modifier.size(16.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Indietro",
-                color = Color.Black,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
+            Button(
+                onClick = {
+                    navController.navigate("dashboard")
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3A7BD5)),
+                modifier = Modifier
+                    .padding(8.dp)
+                    .weight(1f)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.dashboard),
+                    contentDescription = "Icona Dashboard",
+                    modifier = Modifier.size(16.dp)
+                )
 
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Text(
+                    text = "Dashboard",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Button(
+                onClick = {
+                    viewModel?.disconnect(deviceId = deviceId)
+                    navController.navigate("list")
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2F3F4)),
+                modifier = Modifier
+                    .padding(8.dp)
+                    .weight(1f),
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.disconnect),
+                    contentDescription = "Icona Disconnesso",
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Disconnetti",
+                    color = Color.Black,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
     }
+}
+
+@Preview
+@Composable
+fun BleDeviceDetailPreview() {
+    BleDeviceDetail(
+        navController = rememberNavController(),
+        viewModel = null,
+        deviceId = "00:00:00:00:00:00"
+    )
 }

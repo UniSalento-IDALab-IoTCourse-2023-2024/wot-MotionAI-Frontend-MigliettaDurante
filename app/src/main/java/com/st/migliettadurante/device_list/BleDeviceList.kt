@@ -30,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -40,8 +39,6 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.har.migliettadurante.R
-import com.st.migliettadurante.ActivityList
-import com.st.migliettadurante.MainActivity
 
 @OptIn(
     ExperimentalPermissionsApi::class,
@@ -168,7 +165,7 @@ fun BleDeviceList(
                 }
 
                 Button(
-                    onClick = { navController.popBackStack() },
+                    onClick = { navController.navigate("dashboard") },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2F3F4)),
                     modifier = Modifier
                         .padding(8.dp)
@@ -194,20 +191,17 @@ fun BleDeviceList(
         }
     } else {
         PermissionRationale(
-            doNotShowRationale = doNotShowRationale,
             onRequestPermissions = { locationPermissionState.launchMultiplePermissionRequest() },
-            onDismiss = { doNotShowRationale = true }
+            navController = navController,
         )
     }
 }
 
 @Composable
 fun PermissionRationale(
-    doNotShowRationale: Boolean,
     onRequestPermissions: () -> Unit,
-    onDismiss: () -> Unit
+    navController: NavHostController
 ) {
-    val activity = LocalContext.current as? MainActivity
 
     Column(
         modifier = Modifier
@@ -264,28 +258,27 @@ fun PermissionRationale(
             }
         }
 
-        // Righe per i pulsanti in fondo alla schermata
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp) // Padding inferiore per evitare che i pulsanti tocchino il bordo inferiore
+                .padding(bottom = 16.dp)
         ) {
             Button(
-                onClick = { activity?.finishAffinity() },
+                onClick = { navController.popBackStack() },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2F3F4)),
                 modifier = Modifier
                     .padding(end = 8.dp)
                     .weight(1f)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.close_6731010),
-                    contentDescription = "Icona Esci dall'app",
+                    painter = painterResource(id = R.drawable.ic_back),
+                    contentDescription = "Icona Indietro",
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Esci dall'app",
+                    text = "Indietro",
                     color = Color.Black,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold

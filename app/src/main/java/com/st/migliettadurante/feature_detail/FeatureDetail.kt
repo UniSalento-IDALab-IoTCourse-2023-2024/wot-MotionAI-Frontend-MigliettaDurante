@@ -1,6 +1,7 @@
 package com.st.migliettadurante.feature_detail
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -13,31 +14,35 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.har.migliettadurante.R
 
 @SuppressLint("MissingPermission")
 @Composable
 fun FeatureDetail(
     navController: NavHostController,
-    viewModel: FeatureDetailViewModel,
+    viewModel: FeatureDetailViewModel?,
     deviceId: String,
     featureName: String
 ) {
+    val featureIndex = 0
     val backHandlingEnabled by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
-        viewModel.startCalibration(deviceId, featureName)
+        viewModel?.startCalibration(deviceId, featureName)
     }
 
     BackHandler(enabled = backHandlingEnabled) {
-        viewModel.disconnectFeature(deviceId = deviceId, featureName = featureName)
+        viewModel?.disconnectFeature(deviceId = deviceId, featureName = featureName, index = featureIndex)
         navController.popBackStack()
     }
 
-    val features = viewModel.featureUpdates
+    val feature = viewModel?.featureUpdates?.value?.get(featureIndex)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -80,7 +85,7 @@ fun FeatureDetail(
             elevation = CardDefaults.cardElevation(8.dp)
         ) {
             Text(
-                text = "${features.value?.data}",
+                text = "${feature?.data}",
                 style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
                 modifier = Modifier.padding(8.dp)
             )
@@ -109,7 +114,18 @@ fun FeatureDetail(
     }
 
     LaunchedEffect(true) {
-        viewModel.observeFeature(deviceId = deviceId, featureName = featureName)
-        viewModel.sendExtendedCommand(featureName = featureName, deviceId = deviceId)
+        viewModel?.observeFeature(deviceId = deviceId, featureName = featureName, index = featureIndex)
+        viewModel?.sendExtendedCommand(featureName = featureName, deviceId = deviceId)
     }
+}
+
+@Preview
+@Composable
+fun FeatureDetailPreview(){
+    FeatureDetail(
+        navController = rememberNavController(),
+        viewModel = null,
+        deviceId = "device_id",
+        featureName = "feature_name"
+    )
 }

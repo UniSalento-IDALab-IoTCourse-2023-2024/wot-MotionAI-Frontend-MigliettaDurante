@@ -27,6 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -59,7 +61,8 @@ fun Dashboard(
 
     var connected = false
     if (deviceId != null) {
-        var bleDevice = bleDeviceDetailViewModel?.bleDevice(deviceId = deviceId)?.collectAsState(null)
+        var bleDevice =
+            bleDeviceDetailViewModel?.bleDevice(deviceId = deviceId)?.collectAsState(null)
         bleDevice?.value?.connectionStatus?.current.let {
             Log.d("Dashboard", "Connected: $it")
             connected = it == NodeState.Ready
@@ -72,11 +75,13 @@ fun Dashboard(
         navController?.navigate("login")
     }
 
-    val jwtToken = secureStorageManager.getJwt()
+    val jwtToken = remember {
+        mutableStateOf(secureStorageManager.getJwt())
+    }
     var user = UserResponse()
 
     val isUserSaved = secureStorageManager.isUserSaved()
-    val currentUserEmail = dashboardViewModel.decodeJWT(jwtToken!!).getString("sub")
+    val currentUserEmail = dashboardViewModel.decodeJWT(jwtToken.value!!).getString("sub")
     val savedUserEmail = secureStorageManager.getUser().email
 
     if (isUserSaved && currentUserEmail == savedUserEmail) {
@@ -89,7 +94,7 @@ fun Dashboard(
 
     } else {
 
-        dashboardViewModel.getUser(jwtToken)
+        dashboardViewModel.getUser(jwtToken.value!!)
         userResponse.value?.let {
             secureStorageManager.saveUser(it)
         }
@@ -113,8 +118,8 @@ fun Dashboard(
     LaunchedEffect(Unit) {
         val date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
 
-        dashboardViewModel.getActivityDuration(date, jwtToken)
-        dashboardViewModel.getWeeklyEstimate(jwtToken)
+        dashboardViewModel.getActivityDuration(date, jwtToken.value!!)
+        dashboardViewModel.getWeeklyEstimate(jwtToken.value!!)
     }
 
     activitiesResponse.value?.let {
@@ -294,7 +299,7 @@ fun Dashboard(
                 modifier = Modifier.padding(vertical = 16.dp)
             )
 
-            Row (
+            Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
@@ -309,7 +314,7 @@ fun Dashboard(
                         .height(100.dp)
                         .weight(1f),
                 ) {
-                    Column (
+                    Column(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -336,7 +341,7 @@ fun Dashboard(
                         .height(100.dp)
                         .weight(1f),
                 ) {
-                    Column (
+                    Column(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -366,7 +371,7 @@ fun Dashboard(
                         .fillMaxWidth()
                         .height(100.dp)
                 ) {
-                    Column (
+                    Column(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -393,7 +398,7 @@ fun Dashboard(
                         .fillMaxWidth()
                         .height(100.dp)
                 ) {
-                    Column (
+                    Column(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {

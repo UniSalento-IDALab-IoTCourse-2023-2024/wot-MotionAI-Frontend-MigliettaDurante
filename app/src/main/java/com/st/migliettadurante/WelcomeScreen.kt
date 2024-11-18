@@ -33,10 +33,19 @@ import androidx.navigation.compose.rememberNavController
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.har.migliettadurante.R
+import com.st.migliettadurante.authentication.SecureStorageManager
 
 
 @Composable
 fun WelcomeScreen(navController: NavController) {
+
+    val secureStorageManager = SecureStorageManager(LocalContext.current)
+    LaunchedEffect(Unit) {
+        secureStorageManager.clearJwt()
+        secureStorageManager.clearUser()
+        secureStorageManager.clearDeviceId()
+    }
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {

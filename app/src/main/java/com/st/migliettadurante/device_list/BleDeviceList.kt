@@ -11,7 +11,12 @@ package com.st.migliettadurante.device_list
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
+import android.os.PowerManager
+import android.provider.Settings
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -30,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -54,7 +60,16 @@ fun BleDeviceList(
     }
 
     val locationPermissionState = rememberMultiplePermissionsState(
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) listOf(
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) listOf(
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.BLUETOOTH_SCAN,
+            Manifest.permission.BLUETOOTH,
+            Manifest.permission.BLUETOOTH_CONNECT,
+            Manifest.permission.POST_NOTIFICATIONS
+        )
+        else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) listOf(
             Manifest.permission.RECORD_AUDIO,
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -68,6 +83,13 @@ fun BleDeviceList(
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
     )
+
+    val context = LocalContext.current
+    LaunchedEffect(locationPermissionState.permissions) {
+        if (locationPermissionState.allPermissionsGranted) {
+            requestDisableBatteryOptimizations(context)
+        }
+    }
 
     if (locationPermissionState.allPermissionsGranted) {
         val devices = viewModel.scanBleDevices.collectAsState(initial = emptyList())
@@ -177,7 +199,8 @@ fun BleDeviceList(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Indietro",
+                    Text(
+                        "Indietro",
                         color = Color.Black,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold
@@ -308,3 +331,17 @@ fun PermissionRationale(
         }
     }
 }
+
+@SuppressLint("BatteryLife")
+fun requestDisableBatteryOptimizations(context: Context) {
+    val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+    val packageName = context.packageName
+
+    if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
+        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+            data = Uri.parse("package:$packageName")
+        }
+        context.startActivity(intent)
+    }
+}
+

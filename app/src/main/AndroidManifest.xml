@@ -9,6 +9,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <application
         android:name="com.st.migliettadurante.SampleApp"
@@ -17,17 +23,19 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.StDemo">
+        <service
+            android:name="com.st.migliettadurante.foreground_service.AccelerometerService"
+            android:exported="true"
+            android:foregroundServiceType="location" />
         <activity
             android:name="com.st.migliettadurante.MainActivity"
             android:scheme="com.st.migliettadurante"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.StDemo.NoActionBar"
             android:windowSoftInputMode="adjustResize"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

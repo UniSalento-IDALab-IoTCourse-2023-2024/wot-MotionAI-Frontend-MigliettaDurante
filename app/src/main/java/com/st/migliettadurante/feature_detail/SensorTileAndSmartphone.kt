@@ -73,10 +73,8 @@ fun SensorTileAndSmartphone(
     val accelerometerFeature = featureViewModel.featureUpdates.value.get(accelerometerIndex)
 
     val currentActivity = remember { mutableStateOf("") }
-    val randomForestActivity = remember { mutableStateOf("") }
 
     LaunchedEffect(activityRecognitionFeature) {
-        Log.d("ActivityRecognitionFeature", "Effect launched")
         val dataString = activityRecognitionFeature?.data?.toString() ?: ""
         currentActivity.value = extractPrevisionFromLoggable(dataString)
 
@@ -85,100 +83,33 @@ fun SensorTileAndSmartphone(
         }
     }
 
-    if (accelerometerFeature != null) {
-        Log.d("AccelerometerFeature", "is not null")
+    val recognitionInsertResponse =
+        recognitionViewModel.insertRecognitionResponse.observeAsState()
+    LaunchedEffect(recognitionInsertResponse.value) {
+        recognitionInsertResponse.value?.let {
+            Log.d("Smartphone Recognition", "Attività memorizzata, Response: ${it.message}")
+        }
+    }
 
-        val xValues = remember { mutableStateListOf<Float>() }
-        val yValues = remember { mutableStateListOf<Float>() }
-        val zValues = remember { mutableStateListOf<Float>() }
-
-        var lastActivity = remember { mutableStateOf("") }
-
-        val recognitionInsertResponse =
-            recognitionViewModel.insertRecognitionResponse.observeAsState()
-        val errorRecognitionInsertResponse = recognitionViewModel.error.observeAsState()
-
+    val errorRecognitionInsertResponse = recognitionViewModel.error.observeAsState()
+    LaunchedEffect(errorRecognitionInsertResponse.value) {
         errorRecognitionInsertResponse.value?.let {
-            Log.e("RecognitionViewModel", it)
-            navController.popBackStack()
+            Log.e("Smartphone Recognition", "Errore nell'invio dell'attività $it")
         }
+    }
 
-        val context = LocalContext.current
-        val jwtToken = SecureStorageManager(context).getJwt()
+    val context = LocalContext.current
+    val jwtToken = SecureStorageManager(context).getJwt()
 
-        var startTime = remember { mutableStateOf(0L) }
+    LaunchedEffect(accelerometerFeature) {
+        val dataString = accelerometerFeature?.data.toString()
 
-        LaunchedEffect(accelerometerFeature) {
-
-            val dataString = accelerometerFeature.data.toString()
-            val (x, y, z) = recognitionViewModel.extractCoordinatesFromLoggable(dataString)
-
-            xValues.add(x)
-            yValues.add(y)
-            zValues.add(z)
-
-            val n_rows = 60
-
-            if (xValues.size == n_rows && yValues.size == n_rows && zValues.size == n_rows) {
-
-                val xStats = recognitionViewModel.calculateStatistics(xValues.toFloatArray())
-                val yStats = recognitionViewModel.calculateStatistics(yValues.toFloatArray())
-                val zStats = recognitionViewModel.calculateStatistics(zValues.toFloatArray())
-
-                val stats = FloatArray(12)
-
-                for (i in 0 until 4) {
-                    val j = i * 3
-                    stats[j] = xStats[i]
-                    stats[j + 1] = yStats[i]
-                    stats[j + 2] = zStats[i]
-                }
-
-                val date =
-                    LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
-
-                val recognition = InsertPrediction()
-                recognition.prediction =
-                    recognitionViewModel.getRecognitionFromRandomForest(context, stats)
-                recognition.deviceId = deviceId
-                recognition.date = date
-
-                randomForestActivity.value = recognition.prediction
-                if (lastActivity.value == "") {
-                    Log.d("Smartphone Recognition", "Timer started")
-                    startTime.value = System.currentTimeMillis()
-                }
-
-                Log.d(
-                    "Smartphone Recognition",
-                    "Activity: ${randomForestActivity.value}"
-                )
-                if (lastActivity.value != randomForestActivity.value) {
-                    val endTime = System.currentTimeMillis()
-
-                    val duration = (endTime - startTime.value) / 1000
-                    Log.d(
-                        "Smartphone Recognition",
-                        "Activity: ${lastActivity.value}, Duration: $duration seconds"
-                    )
-
-                    recognition.duration = duration.toInt()
-
-                    if (duration > 0)
-                        recognitionViewModel.saveRecognition(jwtToken!!, recognition)
-
-                    lastActivity.value = randomForestActivity.value
-
-                    startTime.value = System.currentTimeMillis()
-                    Log.d("Smartphone Recognition", "Timer started")
-
-                }
-
-                xValues.clear()
-                yValues.clear()
-                zValues.clear()
-            }
-        }
+        recognitionViewModel.executeAccelerometerEffect(
+            context = context,
+            dataString = dataString,
+            jwtToken = jwtToken!!,
+            deviceId = deviceId
+        )
     }
 
     Column(
@@ -247,8 +178,8 @@ fun SensorTileAndSmartphone(
         )
 
         RecognitionCard(
-            activityName = if (randomForestActivity.value != "") randomForestActivity.value else "Attività non rilevata",
-            imageRes = when (randomForestActivity.value) {
+            activityName = (if (RecognitionData.activity.value != "") RecognitionData.activity.value else "Attività non rilevata").toString(),
+            imageRes = when (RecognitionData.activity.value) {
                 "Running" -> R.drawable.run_image
                 "Walking" -> R.drawable.walk_image
                 "Stationary" -> R.drawable.stop_image
@@ -261,7 +192,28 @@ fun SensorTileAndSmartphone(
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
-            onClick = { navController.popBackStack() },
+            onClick = {
+                // Salvo l'ultimo riconoscimento
+                if (recognitionViewModel.startTime.longValue != 0L && RecognitionData.activity.value != "") {
+
+                    val endTime = System.currentTimeMillis()
+                    val duration = (endTime - recognitionViewModel.startTime.longValue) / 1000
+                    val date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+                    val recognition = InsertPrediction().apply {
+                        this.prediction = RecognitionData.activity.value
+                        this.deviceId = deviceId
+                        this.date = date
+                        this.duration = duration.toInt()
+                    }
+                    recognitionViewModel.saveRecognition(jwtToken!!, recognition)
+
+                    RecognitionData.xValues.clear()
+                    RecognitionData.yValues.clear()
+                    RecognitionData.zValues.clear()
+                    RecognitionData.updateActivity("")
+                }
+                navController.popBackStack()
+            },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2F3F4)),
             modifier = Modifier
                 .padding(8.dp)

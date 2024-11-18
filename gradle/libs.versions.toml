@@ -25,9 +25,14 @@ appauth = "0.11.1"
 benManes = "0.51.0"
 coilCompose = "2.2.2"
 converterGson = "2.9.0"
+daggerAssisted = "2.48"
+daggerAssistedCompiler = "2.48"
 exoplayer = "2.19.1"
 gson = "2.8.9"
 hilt = "2.51.1"
+hiltAndroidGradlePlugin = "2.52"
+hiltCompiler = "1.0.0"
+hiltWork = "1.0.0"
 jwt = "2.0.2"
 # @pin https://developer.android.com/jetpack/androidx/releases/compose-kotlin
 kotlin = "2.0.0"
@@ -46,6 +51,7 @@ retrofitKotlinxSerializationJson = "1.0.0"
 retrofitVersion = "2.9.0"
 runtimeLivedata = "1.7.5"
 securityCrypto = "1.0.0"
+workRuntimeKtx = "2.9.1"
 
 [libraries]
 accompanist-flowlayout = { module = "com.google.accompanist:accompanist-flowlayout", version.ref = "accompanist" }
@@ -57,6 +63,8 @@ accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "androidxComposeBom" }
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation" }
 androidx-compose-foundationLayout = { module = "androidx.compose.foundation:foundation-layout" }
+androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltCompiler" }
+androidx-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hiltWork" }
 androidx-material2 = { module = "com.google.android.material:material", version.ref = "material2" }
 androidx-compose-material2 = { module = "androidx.compose.material:material" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
@@ -77,13 +85,17 @@ androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "androidx
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "androidxRoom" }
 androidx-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "runtimeLivedata" }
 androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCrypto" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 apache-commons = { module = "commons-net:commons-net", version.ref = "apacheCommons" }
 auth0-jwtdecode = { module = "com.auth0.android:jwtdecode", version.ref = "jwt" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
+dagger-assisted = { module = "dagger.assisted:dagger-assisted", version.ref = "daggerAssisted" }
+dagger-assisted-compiler = { module = "dagger.assisted:dagger-assisted-compiler", version.ref = "daggerAssistedCompiler" }
 exoplayer = { module = "com.google.android.exoplayer:exoplayer", version.ref = "exoplayer" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+hilt-android-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hiltAndroidGradlePlugin" }
 hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
 kotlinx-serializationjson = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 microsoft-onnxruntime-android = { module = "com.microsoft.onnxruntime:onnxruntime-android", version.ref = "onnxruntimeAndroidVersion" }

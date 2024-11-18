@@ -13,6 +13,8 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    id("kotlin-android")
+    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -49,6 +51,10 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
     }
 
     buildFeatures {
@@ -93,6 +99,14 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.security.crypto)
+    implementation(libs.androidx.work.runtime.ktx)
+
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
+
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
     debugImplementation(libs.androidx.compose.uitestmanifest)

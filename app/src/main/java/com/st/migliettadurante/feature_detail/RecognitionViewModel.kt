@@ -8,17 +8,27 @@ import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.amazonaws.mobileconnectors.apigateway.ApiClientFactory
 import com.har.migliettadurante.R
+import com.st.migliettadurante.feature_detail.RecognitionData.xValues
+import com.st.migliettadurante.feature_detail.RecognitionData.yValues
+import com.st.migliettadurante.feature_detail.RecognitionData.zValues
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.component3
 
 class RecognitionViewModel : ViewModel() {
     private val _insertRecognitionResponse = MutableLiveData<MessageResponse>()
@@ -112,8 +122,85 @@ class RecognitionViewModel : ViewModel() {
         session.close()
         env.close()
 
-        Log.d("RandomForest", "Prediction: $output")
-
         return output.toString()
+    }
+
+    val randomForestActivity = mutableStateOf("")
+    val lastActivity = mutableStateOf("")
+    val startTime = mutableLongStateOf(0L)
+
+    fun executeAccelerometerEffect(
+        context: Context,
+        dataString: String,
+        jwtToken: String,
+        deviceId: String
+    ) {
+        viewModelScope.launch {
+            val (x, y, z) = extractCoordinatesFromLoggable(dataString)
+
+            xValues.add(x)
+            yValues.add(y)
+            zValues.add(z)
+
+            val nRows = 60
+
+            if (xValues.size == nRows && yValues.size == nRows && zValues.size == nRows) {
+
+                val xStats = calculateStatistics(xValues.toFloatArray())
+                val yStats = calculateStatistics(yValues.toFloatArray())
+                val zStats = calculateStatistics(zValues.toFloatArray())
+
+                val stats = FloatArray(12)
+
+                for (i in 0 until 4) {
+                    val j = i * 3
+                    stats[j] = xStats[i]
+                    stats[j + 1] = yStats[i]
+                    stats[j + 2] = zStats[i]
+                }
+
+                randomForestActivity.value = getRecognitionFromRandomForest(context, stats)
+                if (lastActivity.value == "") {
+                    Log.d("Smartphone Recognition", "Timer started")
+                    startTime.longValue = System.currentTimeMillis()
+                }
+
+                Log.d(
+                    "Smartphone Recognition",
+                    "Activity: ${randomForestActivity.value}"
+                )
+                if (lastActivity.value != randomForestActivity.value && startTime.longValue != 0L) {
+
+                    val endTime = System.currentTimeMillis()
+                    val duration =
+                        (endTime - (startTime.longValue)) / 1000
+
+                    if (duration > 0 && lastActivity.value != "") {
+                        val date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+                        val recognition = InsertPrediction().apply {
+                            this.prediction = lastActivity.value
+                            this.deviceId = deviceId
+                            this.date = date
+                            this.duration = duration.toInt()
+                        }
+
+                        saveRecognition(jwtToken, recognition)
+                        Log.d(
+                            "Smartphone Recognition",
+                            "Activity: ${lastActivity.value}, Duration: $duration seconds"
+                        )
+                    }
+                    lastActivity.value = randomForestActivity.value
+                    RecognitionData.updateActivity(randomForestActivity.value)
+
+                    startTime.longValue = System.currentTimeMillis()
+                    Log.d("Smartphone Recognition", "Timer started")
+                }
+
+                xValues.clear()
+                yValues.clear()
+                zValues.clear()
+            }
+        }
     }
 }

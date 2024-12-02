@@ -100,25 +100,4 @@ class UpdateUserViewModel : ViewModel() {
             }
         }
     }
-
-    fun deleteActivities(jwtToken: String) {
-        viewModelScope.launch {
-            try {
-
-                val factory = ApiClientFactory()
-                val client = factory.build(StoricoDatiClient::class.java)
-
-                // Esegui la chiamata API
-                val response = withContext(Dispatchers.IO) {
-                    client.apiV1PredictionDeleteActivityDelete("Bearer $jwtToken")
-                }
-
-                // Imposta la risposta nel LiveData
-                _deleteActivitiesResponse.postValue(response!!)
-            } catch (exception: Exception) {
-                // In caso di errore, imposta l'errore nel LiveData
-                _errorDeleteActivities.postValue(exception.message)
-            }
-        }
-    }
 }

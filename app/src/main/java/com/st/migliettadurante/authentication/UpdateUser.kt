@@ -107,7 +107,6 @@ fun UpdateUser(
     deleteUserResponse.value?.let {
 
         updateUserViewModel.deleteRecognitions(secureStorageManager.getJwt()!!)
-        updateUserViewModel.deleteActivities(secureStorageManager.getJwt()!!)
 
         secureStorageManager.clearJwt()
         secureStorageManager.clearUser()

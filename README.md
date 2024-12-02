@@ -29,7 +29,7 @@ Tramite l'SDK MotionAI-Backend disponibile alla seguente repository: [wot-Motion
 l'applicazione è dotata di diverse funzionalità aggiuntive:
 - Registrazione e autenticazione degli utenti.
 - Memorizzazione dei riconoscimenti delle attività umane con relative durate in un database remoto.
-- Visualizzazione di uno storico delle attività riconosciute nelle giornate precedenti.
+- Visualizzazione di uno storico delle attività riconosciute nelle giornate precedenti con relative durate.
 - Visualizzazione di statistiche relative alle attività riconosciute sottoforma di stime settimanali.
 - Possibilità di eliminare i propri dati memorizzati nel database.
 
